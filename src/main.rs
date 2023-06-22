@@ -1,4 +1,7 @@
+use std::net::SocketAddr;
+
 use async_graphql::*;
+use axum::{routing, Router};
 
 struct Query;
 
@@ -11,8 +14,10 @@ impl Query {
 
 #[tokio::main]
 async fn main() {
-    let schema = Schema::new(Query, EmptyMutation, EmptySubscription);
-    let res = schema.execute("{add(a: 19, b:22)}").await;
-    let json = serde_json::to_string(&res);
-    println!("{:#?}", json);
+    let app = Router::new().route("/", routing::get(|| async { "oisu:" }));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }
