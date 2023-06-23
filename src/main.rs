@@ -1,11 +1,13 @@
 use async_graphql::{http::GraphiQLSource, *};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{
+    http::HeaderValue,
     response::{self, IntoResponse},
     routing::get,
     Extension, Router,
 };
 use std::net::SocketAddr;
+use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use uuid::Uuid;
 
 #[derive(SimpleObject)]
@@ -32,7 +34,6 @@ struct Query;
 #[Object]
 impl Query {
     async fn user(&self) -> anyhow::Result<Option<User>> {
-        println!("user query called");
         Ok(Some(User {
             id: ID(Uuid::new_v4().to_string()),
             name: String::from("itt"),
@@ -48,24 +49,28 @@ impl Query {
 type GQLSchema = Schema<Query, EmptyMutation, EmptySubscription>;
 
 async fn graphql_handler(schema: Extension<GQLSchema>, req: GraphQLRequest) -> GraphQLResponse {
-    println!("handler");
     schema.execute(req.into_inner()).await.into()
 }
 async fn graphiql() -> impl IntoResponse {
-    println!("graphiql");
     response::Html(GraphiQLSource::build().endpoint("/").finish())
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let schema: GQLSchema = Schema::build(Query, EmptyMutation, EmptySubscription).finish();
-    println!("schema built!");
     println!("{}", &schema.sdl());
     let app = Router::new()
         .route("/", get(graphiql).post(graphql_handler))
-        .layer(Extension(schema));
+        .layer(Extension(schema))
+        .layer(
+            CorsLayer::new()
+                .allow_origin(AllowOrigin::exact(HeaderValue::from_static(
+                    "http://localhost:3030",
+                )))
+                .allow_methods(Any)
+                .allow_headers(Any),
+        );
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    println!("listening at 3000");
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
