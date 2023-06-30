@@ -13,6 +13,9 @@ const { result } = useQuery(
         id
         title
         content
+        tags {
+          id
+        }
       }
     }
   `),

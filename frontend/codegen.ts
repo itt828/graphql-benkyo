@@ -6,12 +6,8 @@ const config: CodegenConfig = {
   documents: 'src/**/*.vue',
   generates: {
     'src/api/graphql/generated/': {
-      preset: 'client',
-      plugins: ['typescript', 'typescript-operations', 'typescript-vue-apollo'],
-      config: {
-        // withCompositionFunctions: true
-        useTypeImports: true
-      }
+      preset: 'client'
+      // plugins: ['typescript', 'typescript-operations', 'typescript-vue-apollo']
     }
   }
 }
