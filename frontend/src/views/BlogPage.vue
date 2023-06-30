@@ -4,10 +4,8 @@
 <script setup lang="ts">
 import { graphql } from '@/api/graphql/generated'
 import { useQuery } from '@vue/apollo-composable'
-import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed } from 'vue'
 
-const route = useRoute()
 const { result } = useQuery(
   graphql(`
     query blog($id: ID!) {
