@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{io::Write, sync::Arc};
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use blog::{
@@ -6,6 +6,7 @@ use blog::{
     repository::blog::MockBlogRepository,
     service::blog::BlogServiceImpl,
 };
+use std::fs::File;
 
 fn main() {
     let schema: GQLSchema = Schema::build(
@@ -18,5 +19,7 @@ fn main() {
         EmptySubscription,
     )
     .finish();
-    println!("{}", &schema.sdl());
+
+    let mut file = File::create("schema.graphql").unwrap();
+    let _ = file.write_all(schema.sdl().as_bytes());
 }

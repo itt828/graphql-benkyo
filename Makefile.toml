@@ -1,0 +1,3 @@
+[tasks.gen-schema]
+command = "cargo"
+args = ["run", "--bin", "gen-schema"]

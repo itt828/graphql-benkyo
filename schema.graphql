@@ -1,0 +1,24 @@
+type Blog {
+	id: ID!
+	title: String!
+	tags: [Tag!]!
+	content: String!
+}
+
+type BlogQuery {
+	blog(id: ID!): Blog!
+}
+
+
+
+
+
+
+type Tag {
+	id: ID!
+	name: String!
+}
+
+schema {
+	query: BlogQuery
+}

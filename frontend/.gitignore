@@ -28,4 +28,4 @@ coverage
 *.sw?
 
 generated/
-schema.graphql
+# schema.graphql
