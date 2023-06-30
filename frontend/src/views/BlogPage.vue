@@ -1,5 +1,7 @@
 <template>
-  {{ blog }}
+  <div :class="$style.container">
+    {{ blog?.blog.content }}
+  </div>
 </template>
 <script setup lang="ts">
 import { graphql } from '@/api/graphql/generated'
@@ -23,3 +25,11 @@ const { result } = useQuery(
 )
 const blog = computed(() => result.value)
 </script>
+
+<style module lang="scss">
+.container {
+  font-size: 1.5rem;
+  padding: 2rem 1rem;
+  max-width: 960px;
+}
+</style>

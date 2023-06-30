@@ -8,16 +8,19 @@ provide(DefaultApolloClient, apolloClient)
 </script>
 
 <template>
-  <header>
-    <div>header</div>
+  <header :class="$style.header">
+    <div>ブログ</div>
   </header>
   <main>
     <RouterView />
   </main>
 </template>
 
-<style lang="scss">
+<style module lang="scss">
 html {
   font-family: Arial, Helvetica, sans-serif;
+}
+.header {
+  font-size: 1.5rem;
 }
 </style>
