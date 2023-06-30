@@ -4,19 +4,20 @@ import { provideApolloClient, useQuery } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
 import { computed } from 'vue'
 
-const query = provideApolloClient(apolloClient)(() =>
-  useQuery(gql`
-    query {
-      user {
-        id
-        name
-      }
-    }
-  `)
-)
-const result = computed(() => query.result.value)
+// const query = provideApolloClient(apolloClient)(() =>
+//   useQuery(gql`
+//     query {
+//       user {
+//         id
+//         name
+//       }
+//     }
+//   `)
+// )
+// const result = computed(() => query.result.value)
 </script>
 
 <template>
-  <main>result: {{ result }}</main>
+  d
+  <!-- <main>result: {{ result }}</main> -->
 </template>
