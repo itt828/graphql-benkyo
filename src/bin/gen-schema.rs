@@ -21,5 +21,10 @@ fn main() {
     .finish();
 
     let mut file = File::create("schema.graphql").unwrap();
-    let _ = file.write_all(schema.sdl().as_bytes());
+    let schema_text = format!(
+        r"# Auto generated. DO NOT EDIT.
+{}",
+        schema.sdl()
+    );
+    let _ = file.write_all(schema_text.as_bytes());
 }
