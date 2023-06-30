@@ -1,13 +1,3 @@
-pub mod domain;
-pub mod handler;
-pub mod repository;
-pub mod service;
-
-use crate::{
-    handler::graphql::{blog::BlogQuery, GQLSchema},
-    repository::blog::MockBlogRepository,
-    service::blog::BlogServiceImpl,
-};
 use async_graphql::{http::GraphiQLSource, EmptyMutation, EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{
@@ -15,6 +5,11 @@ use axum::{
     response::{self, IntoResponse},
     routing::get,
     Extension, Router,
+};
+use blog::{
+    handler::graphql::{blog::BlogQuery, GQLSchema},
+    repository::blog::MockBlogRepository,
+    service::blog::BlogServiceImpl,
 };
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
@@ -38,7 +33,6 @@ async fn main() -> anyhow::Result<()> {
         EmptySubscription,
     )
     .finish();
-    println!("{}", &schema.sdl());
     let app = Router::new()
         .route("/", get(graphiql).post(graphql_handler))
         .layer(Extension(schema))
