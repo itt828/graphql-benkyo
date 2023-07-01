@@ -15,7 +15,7 @@ struct Blog {
 impl From<Blog> for crate::domain::blog::Blog {
     fn from(value: Blog) -> Self {
         Self {
-            id: Uuid::from_str(&*value.id).unwrap(),
+            id: Uuid::from_str(&value.id).unwrap(),
             title: value.title,
             content: value.content,
             authors: vec![],
@@ -32,7 +32,7 @@ pub struct BlogRepositoryImpl {
 impl BlogRepository for BlogRepositoryImpl {
     async fn get_blog(&self, id: uuid::Uuid) -> anyhow::Result<Option<crate::domain::blog::Blog>> {
         let pool = self.pool.clone();
-        let blog: Option<Blog> = sqlx::query_as(r"SELECT * FROM `database`")
+        let blog: Option<Blog> = sqlx::query_as(r"SELECT * FROM `blog`")
             .fetch_optional(&*pool)
             .await?;
         Ok(blog.map(|b| b.into()))

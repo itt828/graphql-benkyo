@@ -29,7 +29,9 @@ async fn graphiql() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    println!("db connecting");
     let pool = connect_db().await?;
+    println!("db connected!");
     let repository = Arc::new(BlogRepositoryImpl {
         pool: Arc::new(pool),
     });

@@ -16,23 +16,31 @@ services:
       - ./Cargo.lock:/srv/blog/Cargo.lock
       - ./schema.graphql:/srv/blog/schema.graphql
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - default
 
   mysql:
     container_name: blog_development_mysql
-    image: mariadb:latest
-    # restart: always
+    image: mariadb:10
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: blog-db
-    # command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     volumes:
-      - ./db/data:var/lib/mysql
-      # - ./db/init:docker-entrypoint-initdb.d
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/migrations:/docker-entrypoint-initdb.d
     expose:
       - 3306
+    healthcheck:
+      test: mysql --user=root --password=password --execute "SHOW DATABASES;"
+      interval: 1s
+      timeout: 10s
+      retries: 60
+    ports:
+      - "3306:3306"
     networks:
       - default
 
@@ -45,4 +53,5 @@ services:
     networks:
       - default
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
