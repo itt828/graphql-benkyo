@@ -9,17 +9,15 @@ use blog::{
 use std::fs::File;
 
 fn main() {
-    let schema: GQLSchema = Schema::build(
+    let repository = Arc::new(MockBlogRepository);
+    let schema: GQLSchema<MockBlogRepository> = Schema::build(
         BlogQuery {
-            service: Arc::new(BlogServiceImpl {
-                repository: MockBlogRepository,
-            }),
+            service: Arc::new(BlogServiceImpl { repository }),
         },
         EmptyMutation,
         EmptySubscription,
     )
     .finish();
-
     let mut file = File::create("schema.graphql").unwrap();
     let schema_text = format!(
         r"# Auto generated. DO NOT EDIT.

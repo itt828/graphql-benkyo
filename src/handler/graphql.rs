@@ -1,7 +1,10 @@
 pub mod blog;
 pub mod tag;
 pub mod user;
-use crate::{repository::blog::MockBlogRepository, service::blog::BlogServiceImpl};
+use crate::{
+    repository::blog::{BlogRepository, MockBlogRepository},
+    service::blog::BlogServiceImpl,
+};
 
 use self::blog::{Blog, BlogQuery};
 use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema};
@@ -26,8 +29,7 @@ use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema};
 //     }
 // }
 
-pub type GQLSchema =
-    Schema<BlogQuery<BlogServiceImpl<MockBlogRepository>>, EmptyMutation, EmptySubscription>;
+pub type GQLSchema<R> = Schema<BlogQuery<BlogServiceImpl<R>>, EmptyMutation, EmptySubscription>;
 
 // impl GQLSchema {
 //     pub fn new() -> Self {

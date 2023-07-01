@@ -21,8 +21,11 @@ pub struct BlogQuery<S: BlogService> {
 
 #[Object]
 impl<S: BlogService + Sync + Send> BlogQuery<S> {
-    pub async fn blog(&self, id: ID) -> anyhow::Result<Blog> {
-        Ok(self.service.get_blog(Uuid::from_str(&id.0).unwrap()).into())
+    pub async fn blog(&self, id: ID) -> anyhow::Result<Option<Blog>> {
+        self.service
+            .get_blog(Uuid::from_str(&id.0).unwrap())
+            .await
+            .map(|b| b.map(|b| b.into()))
     }
     // pub async fn post_blog(blog: Blog) -> anyhow::Result<Blog> {}
 }

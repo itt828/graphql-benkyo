@@ -8,13 +8,19 @@ use axum::{
 };
 use blog::{
     handler::graphql::{blog::BlogQuery, GQLSchema},
-    repository::blog::MockBlogRepository,
+    repository::{
+        blog::{BlogRepository, MockBlogRepository},
+        mysql::{blog::BlogRepositoryImpl, connect_db},
+    },
     service::blog::BlogServiceImpl,
 };
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 
-async fn graphql_handler(schema: Extension<GQLSchema>, req: GraphQLRequest) -> GraphQLResponse {
+async fn graphql_handler<R: BlogRepository + Send + Sync + 'static>(
+    schema: Extension<GQLSchema<R>>,
+    req: GraphQLRequest,
+) -> GraphQLResponse {
     schema.execute(req.into_inner()).await.into()
 }
 async fn graphiql() -> impl IntoResponse {
@@ -23,10 +29,15 @@ async fn graphiql() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let schema: GQLSchema = Schema::build(
+    let pool = connect_db().await?;
+    let repository = Arc::new(BlogRepositoryImpl {
+        pool: Arc::new(pool),
+    });
+    let schema: GQLSchema<BlogRepositoryImpl> = Schema::build(
         BlogQuery {
             service: Arc::new(BlogServiceImpl {
-                repository: MockBlogRepository,
+                // repository: Arc::new(MockBlogRepository),
+                repository,
             }),
         },
         EmptyMutation,
@@ -34,7 +45,10 @@ async fn main() -> anyhow::Result<()> {
     )
     .finish();
     let app = Router::new()
-        .route("/", get(graphiql).post(graphql_handler))
+        .route(
+            "/",
+            get(graphiql).post(graphql_handler::<BlogRepositoryImpl>),
+        )
         .layer(Extension(schema))
         .layer(
             CorsLayer::new()

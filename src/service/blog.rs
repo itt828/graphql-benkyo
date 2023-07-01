@@ -1,20 +1,25 @@
+use std::sync::Arc;
+
+use async_trait::async_trait;
 use uuid::Uuid;
 
 use crate::{domain::blog::Blog, repository::blog::BlogRepository};
 
+#[async_trait]
 pub trait BlogService {
-    fn get_blog(&self, id: Uuid) -> Blog;
+    async fn get_blog(&self, id: Uuid) -> anyhow::Result<Option<Blog>>;
     // fn post_blog(&self, new_blog: Blog);
     // fn delete_blog(&self, id: Uuid);
 }
 
 pub struct BlogServiceImpl<R: BlogRepository> {
-    pub repository: R,
+    pub repository: Arc<R>,
 }
 
-impl<R: BlogRepository> BlogService for BlogServiceImpl<R> {
-    fn get_blog(&self, id: Uuid) -> Blog {
-        self.repository.get_blog(id)
+#[async_trait]
+impl<R: BlogRepository + Send + Sync> BlogService for BlogServiceImpl<R> {
+    async fn get_blog(&self, id: Uuid) -> anyhow::Result<Option<Blog>> {
+        self.repository.get_blog(id).await
     }
     // fn post_blog(&self, new_blog: Blog) {
     //     self.repository.create_blog(new_blog);
