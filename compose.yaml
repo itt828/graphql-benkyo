@@ -1,0 +1,48 @@
+version: '3'
+
+networks:
+  default:
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/srv/blog/src
+      - ./Cargo.toml:/srv/blog/Cargo.toml
+      - ./Cargo.lock:/srv/blog/Cargo.lock
+      - ./schema.graphql:/srv/blog/schema.graphql
+    depends_on:
+      - mysql
+    networks:
+      - default
+
+  mysql:
+    container_name: blog_development_mysql
+    image: mariadb:latest
+    # restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: blog-db
+    # command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    volumes:
+      - ./db/data:var/lib/mysql
+      # - ./db/init:docker-entrypoint-initdb.d
+    expose:
+      - 3306
+    networks:
+      - default
+
+  adminer:
+    image: adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    ports:
+      - "8080:8080"
+    networks:
+      - default
+    depends_on:
+      - mysql

@@ -1,0 +1,9 @@
+FROM rust:latest
+WORKDIR /srv/blog
+COPY ./Cargo.toml /srv/blog/Cargo.toml
+COPY ./Cargo.lock /srv/blog/Cargo.lock
+COPY ./src /srv/blog/src
+COPY ./schema.graphql /srv/blog/schema.graphql
+
+RUN cargo install cargo-watch
+CMD [ "cargo", "watch", "-s", "cargo run --bin main" ]
