@@ -309,6 +309,7 @@ dependencies = [
  "log",
  "serde_json",
  "sqlx",
+ "thiserror",
  "tokio",
  "tower-http",
  "uuid",
