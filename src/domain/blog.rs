@@ -39,7 +39,7 @@ impl Blog {
         }
     }
     pub fn remove_author(&mut self, author_id: Uuid) -> Result<(), BlogError> {
-        if self.authors.iter().all(|&author| author != author) {
+        if self.authors.iter().all(|&author| author != author_id) {
             Err(BlogError::UserNotFoundError(author_id))
         } else if self.authors.len() == 1 {
             Err(BlogError::ValidationError(
@@ -61,7 +61,7 @@ impl Blog {
         }
     }
     pub fn remove_tag(&mut self, tag_id: Uuid) -> Result<(), BlogError> {
-        if self.tags.iter().all(|&tag| tag != tag) {
+        if self.tags.iter().all(|&tag| tag != tag_id) {
             Err(BlogError::UserNotFoundError(tag_id))
         } else {
             // let _ = self.tags.
@@ -71,7 +71,7 @@ impl Blog {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct BlogTitle(String);
+pub struct BlogTitle(pub String);
 impl BlogTitle {
     pub fn new(s: &str) -> Result<Self, BlogError> {
         if s.chars().count() < 50 {

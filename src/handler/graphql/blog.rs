@@ -3,7 +3,10 @@ use std::{str::FromStr, sync::Arc};
 use async_graphql::{Object, SimpleObject, ID};
 use uuid::{uuid, Uuid};
 
-use crate::{domain, service::blog::BlogService};
+use crate::{
+    domain::{self, blog::BlogTitle},
+    service::blog::BlogService,
+};
 
 use super::tag::Tag;
 
@@ -27,6 +30,12 @@ impl<S: BlogService + Sync + Send> BlogQuery<S> {
             .await
             .map(|b| b.map(|b| b.into()))
     }
+    pub async fn blogs(&self) -> anyhow::Result<Vec<Blog>> {
+        self.service
+            .get_blogs()
+            .await
+            .map(|blogs| blogs.into_iter().map(|blog| blog.into()).collect())
+    }
     // pub async fn post_blog(blog: Blog) -> anyhow::Result<Blog> {}
 }
 
@@ -46,7 +55,7 @@ impl Into<Blog> for domain::blog::Blog {
     fn into(self) -> Blog {
         Blog {
             id: ID(self.id.to_string()),
-            title: self.title,
+            title: self.title.0,
             tags: vec![],
             content: self.content,
         }
