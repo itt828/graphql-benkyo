@@ -27,7 +27,7 @@ impl<R: BlogRepository + Send + Sync> BlogService for BlogServiceImpl<R> {
     }
     async fn create_blog(&self, title: &str, content: &str) -> anyhow::Result<Blog> {
         let blog = Blog::new(Uuid::new_v4(), title, content)?;
-        self.repository.insert_blog(&blog).await;
+        self.repository.insert_blog(&blog).await?;
         Ok(blog)
     }
     // fn delete_blog(&self, id: Uuid) {
