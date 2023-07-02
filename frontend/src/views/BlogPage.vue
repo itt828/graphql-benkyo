@@ -1,12 +1,19 @@
 <template>
   <div :class="$style.container">
-    {{ blog?.blog.content }}
+    {{ blog }}
   </div>
 </template>
 <script setup lang="ts">
 import { graphql } from '@/api/graphql/generated'
 import { useQuery } from '@vue/apollo-composable'
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+// const props = defineProps<{
+//   blog_id: string
+// }>()
+
+const route = useRoute()
 
 const { result } = useQuery(
   graphql(`
@@ -21,9 +28,9 @@ const { result } = useQuery(
       }
     }
   `),
-  { id: '9778228a-12d2-4a22-93ff-e571cf7f7e18' }
+  { id: route.params.id as string }
 )
-const blog = computed(() => result.value)
+const blog = computed(() => result.value?.blog)
 </script>
 
 <style module lang="scss">

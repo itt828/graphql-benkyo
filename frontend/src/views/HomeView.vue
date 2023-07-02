@@ -1,23 +1,29 @@
 <script setup lang="ts">
-import { apolloClient } from '@/api/graphql'
-import { provideApolloClient, useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
 import { computed } from 'vue'
+import { graphql } from '@/api/graphql/generated'
+import { useQuery } from '@vue/apollo-composable'
 
-// const query = provideApolloClient(apolloClient)(() =>
-//   useQuery(gql`
-//     query {
-//       user {
-//         id
-//         name
-//       }
-//     }
-//   `)
-// )
-// const result = computed(() => query.result.value)
+const { result } = useQuery(
+  graphql(`
+    query blogs {
+      blogs {
+        id
+        title
+        content
+        tags {
+          id
+        }
+      }
+    }
+  `)
+)
+const blogs = computed(() => result.value?.blogs)
 </script>
 
 <template>
-  d
-  <!-- <main>result: {{ result }}</main> -->
+  <div v-for="blog in blogs" :key="blog.id">
+    <RouterLink :to="`/posts/${blog.id}`">
+      {{ blog.id }}
+    </RouterLink>
+  </div>
 </template>
