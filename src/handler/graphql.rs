@@ -3,7 +3,8 @@ use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema, SimpleObje
 use std::{str::FromStr, sync::Arc};
 use uuid::Uuid;
 
-pub type GQLSchema<R> = Schema<Query<BlogServiceImpl<R>>, EmptyMutation, EmptySubscription>;
+pub type GQLSchema<R> =
+    Schema<Query<BlogServiceImpl<R>>, Mutation<BlogServiceImpl<R>>, EmptySubscription>;
 
 pub struct Query<BS: BlogService> {
     pub blog_service: Arc<BS>,
@@ -22,6 +23,18 @@ impl<BS: BlogService + Sync + Send> Query<BS> {
             .get_blogs()
             .await
             .map(|blogs| blogs.into_iter().map(|blog| blog.into()).collect())
+    }
+}
+
+pub struct Mutation<BS: BlogService> {
+    pub blog_service: Arc<BS>,
+}
+
+#[Object]
+impl<BS: BlogService + Sync + Send> Mutation<BS> {
+    pub async fn add_blog(&self, title: String, content: String) -> anyhow::Result<Blog> {
+        let blog = self.blog_service.create_blog(&title, &content).await?;
+        Ok(blog.into())
     }
 }
 

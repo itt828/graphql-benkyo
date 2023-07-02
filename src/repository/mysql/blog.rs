@@ -49,7 +49,7 @@ impl BlogRepository for BlogRepositoryImpl {
     }
     async fn insert_blog(&self, blog: &DomainBlog) -> anyhow::Result<()> {
         let pool = self.pool.clone();
-        let query = sqlx::query(r"insert into blog (`id`, `title`, `content`) values (? ? ?)")
+        let query = sqlx::query(r"insert into blog (`id`, `title`, `content`) values (?, ?, ?)")
             .bind(blog.id.to_string())
             .bind(blog.title.0.clone())
             .bind(blog.content.clone());

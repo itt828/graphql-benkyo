@@ -2,7 +2,7 @@ use std::{io::Write, sync::Arc};
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use blog::{
-    handler::graphql::{GQLSchema, Query},
+    handler::graphql::{GQLSchema, Mutation, Query},
     repository::blog::MockBlogRepository,
     service::blog::BlogServiceImpl,
 };
@@ -12,9 +12,13 @@ fn main() {
     let repository = Arc::new(MockBlogRepository);
     let schema: GQLSchema<MockBlogRepository> = Schema::build(
         Query {
+            blog_service: Arc::new(BlogServiceImpl {
+                repository: repository.clone(),
+            }),
+        },
+        Mutation {
             blog_service: Arc::new(BlogServiceImpl { repository }),
         },
-        EmptyMutation,
         EmptySubscription,
     )
     .finish();

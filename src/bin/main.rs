@@ -7,7 +7,7 @@ use axum::{
     Extension, Router,
 };
 use blog::{
-    handler::graphql::{GQLSchema, Query},
+    handler::graphql::{GQLSchema, Mutation, Query},
     repository::{
         blog::{BlogRepository, MockBlogRepository},
         mysql::{blog::BlogRepositoryImpl, connect_db},
@@ -35,14 +35,14 @@ async fn main() -> anyhow::Result<()> {
     let repository = Arc::new(BlogRepositoryImpl {
         pool: Arc::new(pool),
     });
+    let service = Arc::new(BlogServiceImpl { repository });
     let schema: GQLSchema<BlogRepositoryImpl> = Schema::build(
         Query {
-            blog_service: Arc::new(BlogServiceImpl {
-                // repository: Arc::new(MockBlogRepository),
-                repository,
-            }),
+            blog_service: service.clone(),
         },
-        EmptyMutation,
+        Mutation {
+            blog_service: service.clone(),
+        },
         EmptySubscription,
     )
     .finish();
