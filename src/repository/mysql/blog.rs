@@ -34,7 +34,8 @@ pub struct BlogRepositoryImpl {
 impl BlogRepository for BlogRepositoryImpl {
     async fn get_blog(&self, id: uuid::Uuid) -> anyhow::Result<Option<DomainBlog>> {
         let pool = self.pool.clone();
-        let blog: Option<Blog> = sqlx::query_as(r"SELECT * FROM `blog`")
+        let blog: Option<Blog> = sqlx::query_as(r"select * from `blog` where id=?")
+            .bind(id.to_string())
             .fetch_optional(&*pool)
             .await?;
         Ok(blog.map(|b| b.into()))
