@@ -1,46 +1,56 @@
-pub mod blog;
-pub mod tag;
-pub mod user;
-use crate::{
-    repository::blog::{BlogRepository, MockBlogRepository},
-    service::blog::BlogServiceImpl,
-};
+use crate::service::blog::{BlogService, BlogServiceImpl};
+use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema, SimpleObject, ID};
+use std::{str::FromStr, sync::Arc};
+use uuid::Uuid;
 
-use self::blog::{Blog, BlogQuery};
-use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema};
+pub type GQLSchema<R> = Schema<Query<BlogServiceImpl<R>>, EmptyMutation, EmptySubscription>;
 
-// struct Query;
-// #[Object]
-// impl Query {
-//     async fn blog(&self) -> anyhow::Result<Blog> {
-//         a
-//     }
-//     async fn user(&self) -> anyhow::Result<Option<User>> {
-//         Ok(Some(User {
-//             id: ID(Uuid::new_v4().to_string()),
-//             name: String::from("itt"),
-//         }))
-//     }
-//     async fn tag(&self) -> anyhow::Result<Option<Tag>> {
-//         Ok(Some(Tag {
-//             id: ID(Uuid::new_v4().to_string()),
-//             name: String::from("tag"),
-//         }))
-//     }
-// }
+pub struct Query<BS: BlogService> {
+    pub blog_service: Arc<BS>,
+}
 
-pub type GQLSchema<R> = Schema<BlogQuery<BlogServiceImpl<R>>, EmptyMutation, EmptySubscription>;
+#[Object]
+impl<BS: BlogService + Sync + Send> Query<BS> {
+    pub async fn blog(&self, id: ID) -> anyhow::Result<Option<Blog>> {
+        self.blog_service
+            .get_blog(Uuid::from_str(&id.0).unwrap())
+            .await
+            .map(|b| b.map(|b| b.into()))
+    }
+    pub async fn blogs(&self) -> anyhow::Result<Vec<Blog>> {
+        self.blog_service
+            .get_blogs()
+            .await
+            .map(|blogs| blogs.into_iter().map(|blog| blog.into()).collect())
+    }
+}
 
-// impl GQLSchema {
-//     pub fn new() -> Self {
-//         Schema::new(
-//             BlogQuery {
-//                 service: BlogServiceImpl {
-//                     repository: MockBlogRepository,
-//                 },
-//             },
-//             EmptyMutation,
-//             EmptySubscription,
-//         )
-//     }
-// }
+#[derive(SimpleObject)]
+pub struct Blog {
+    id: ID,
+    title: String,
+    tags: Vec<Tag>,
+    content: String,
+}
+
+#[derive(SimpleObject)]
+struct User {
+    id: ID,
+    name: String,
+}
+#[derive(SimpleObject)]
+pub struct Tag {
+    id: ID,
+    name: String,
+}
+
+impl Into<Blog> for crate::domain::blog::Blog {
+    fn into(self) -> Blog {
+        Blog {
+            id: ID(self.id.to_string()),
+            title: self.title.0,
+            tags: vec![],
+            content: self.content,
+        }
+    }
+}
