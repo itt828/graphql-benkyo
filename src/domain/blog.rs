@@ -1,6 +1,5 @@
+use super::error::BlogError;
 use uuid::Uuid;
-
-use super::{error::BlogError, tag::Tag, user::User};
 
 #[derive(Clone, Debug)]
 pub struct Blog {

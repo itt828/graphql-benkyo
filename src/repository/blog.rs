@@ -1,9 +1,6 @@
-use std::vec;
-
-use uuid::Uuid;
-
 use crate::domain::blog::{Blog, BlogTitle};
-use crate::domain::user::User;
+use std::vec;
+use uuid::Uuid;
 
 #[async_trait::async_trait]
 pub trait BlogRepository {
@@ -37,7 +34,7 @@ impl BlogRepository for MockBlogRepository {
     async fn get_blogs(&self) -> anyhow::Result<Vec<Blog>> {
         Ok(vec![])
     }
-    async fn insert_blog(&self, blog: &Blog) -> anyhow::Result<()> {
+    async fn insert_blog(&self, _blog: &Blog) -> anyhow::Result<()> {
         Ok(())
     }
 }

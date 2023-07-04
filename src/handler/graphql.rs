@@ -1,5 +1,5 @@
 use crate::service::blog::{BlogService, BlogServiceImpl};
-use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema, SimpleObject, ID};
+use async_graphql::{EmptySubscription, Object, Schema, SimpleObject, ID};
 use std::{str::FromStr, sync::Arc};
 use uuid::Uuid;
 
@@ -57,13 +57,13 @@ pub struct Tag {
     name: String,
 }
 
-impl Into<Blog> for crate::domain::blog::Blog {
-    fn into(self) -> Blog {
+impl From<crate::domain::blog::Blog> for Blog {
+    fn from(blog: crate::domain::blog::Blog) -> Self {
         Blog {
-            id: ID(self.id.to_string()),
-            title: self.title.0,
+            id: ID(blog.id.to_string()),
+            title: blog.title.0,
             tags: vec![],
-            content: self.content,
+            content: blog.content,
         }
     }
 }

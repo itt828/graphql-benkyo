@@ -1,9 +1,7 @@
-use std::{str::FromStr, sync::Arc};
-
-use sqlx::{Executor, MySqlPool};
-use uuid::Uuid;
-
 use crate::{domain::blog::BlogTitle, repository::blog::BlogRepository};
+use sqlx::{Executor, MySqlPool};
+use std::{str::FromStr, sync::Arc};
+use uuid::Uuid;
 
 type DomainBlog = crate::domain::blog::Blog;
 
@@ -18,7 +16,7 @@ impl From<Blog> for DomainBlog {
     fn from(value: Blog) -> Self {
         Self {
             id: Uuid::from_str(&value.id).unwrap(),
-            title: BlogTitle::new(&*value.title).unwrap(),
+            title: BlogTitle::new(&value.title).unwrap(),
             content: value.content,
             authors: vec![],
             tags: vec![],

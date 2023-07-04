@@ -1,6 +1,6 @@
 use std::{io::Write, sync::Arc};
 
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptySubscription, Schema};
 use blog::{
     handler::graphql::{GQLSchema, Mutation, Query},
     repository::blog::MockBlogRepository,

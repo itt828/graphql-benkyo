@@ -1,4 +1,4 @@
-use async_graphql::{http::GraphiQLSource, EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{http::GraphiQLSource, EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{
     http::HeaderValue,
@@ -9,7 +9,7 @@ use axum::{
 use blog::{
     handler::graphql::{GQLSchema, Mutation, Query},
     repository::{
-        blog::{BlogRepository, MockBlogRepository},
+        blog::BlogRepository,
         mysql::{blog::BlogRepositoryImpl, connect_db},
     },
     service::blog::BlogServiceImpl,
