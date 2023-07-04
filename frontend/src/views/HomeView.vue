@@ -9,10 +9,6 @@ const { result } = useQuery(
       blogs {
         id
         title
-        content
-        tags {
-          id
-        }
       }
     }
   `)
@@ -23,7 +19,7 @@ const blogs = computed(() => result.value?.blogs)
 <template>
   <div v-for="blog in blogs" :key="blog.id">
     <RouterLink :to="`/posts/${blog.id}`">
-      {{ blog.id }}
+      {{ blog.title }}
     </RouterLink>
   </div>
 </template>

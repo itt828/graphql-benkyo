@@ -1,6 +1,11 @@
 <template>
   <div :class="$style.container">
-    {{ blog }}
+    <h1>
+      {{ blog?.title }}
+    </h1>
+    <div>
+      {{ blog?.content }}
+    </div>
   </div>
 </template>
 <script setup lang="ts">
