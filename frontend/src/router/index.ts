@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
+
 import HomeView from '@/views/HomeView.vue'
 import BlogPage from '@/views/BlogPage.vue'
+import NewBlogPage from '@/views/NewBlogPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,6 +16,11 @@ const router = createRouter({
       path: '/posts/:id',
       name: 'blog',
       component: BlogPage
+    },
+    {
+      path: '/posts/new',
+      name: 'newBlog',
+      component: NewBlogPage
     },
     {
       path: '/about',
