@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { graphql } from '@/api/graphql/generated'
-import { useQuery } from '@vue/apollo-composable'
+import { useMutation, useQuery } from '@vue/apollo-composable'
+import router from '@/router'
 
 const { result } = useQuery(
   graphql(`
@@ -14,9 +15,25 @@ const { result } = useQuery(
   `)
 )
 const blogs = computed(() => result.value?.blogs)
+
+const { mutate: login } = useMutation(
+  graphql(`
+    mutation Login {
+      login {
+        url
+      }
+    }
+  `)
+)
+
+const onClick = async () => {
+  const result = await login()
+  window.location.assign(result?.data?.login.url!)
+}
 </script>
 
 <template>
+  <button @click="onClick">ログイン</button>
   <div v-for="blog in blogs" :key="blog.id">
     <RouterLink :to="`/posts/${blog.id}`">
       {{ blog.title }}

@@ -15,6 +15,7 @@ services:
       - ./Cargo.toml:/srv/blog/Cargo.toml
       - ./Cargo.lock:/srv/blog/Cargo.lock
       - ./schema.graphql:/srv/blog/schema.graphql
+      - ./.env:/srv/blog/.env
     depends_on:
       mysql:
         condition: service_healthy

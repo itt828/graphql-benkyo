@@ -1,3 +1,4 @@
+use anyhow::Context;
 use async_graphql::{http::GraphiQLSource, EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{
@@ -7,13 +8,22 @@ use axum::{
     Extension, Router,
 };
 use blog::{
-    handler::graphql::{GQLSchema, Mutation, Query},
+    container::Container,
+    handler::{
+        graphql::{GQLSchema, Mutation, Query},
+        session::callback_handler,
+    },
     repository::{
         blog::BlogRepository,
         mysql::{blog::BlogRepositoryImpl, connect_db},
     },
-    service::blog::BlogServiceImpl,
+    service::{
+        blog::BlogServiceImpl,
+        user::{UserService, UserServiceImpl},
+    },
+    session::oauth_client,
 };
+use std::{fs::File, io::Write};
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 
@@ -29,29 +39,38 @@ async fn graphiql() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    println!("db connecting");
-    let pool = connect_db().await?;
-    println!("db connected!");
-    let repository = Arc::new(BlogRepositoryImpl {
-        pool: Arc::new(pool),
-    });
-    let service = Arc::new(BlogServiceImpl { repository });
+    dotenvy::dotenv()?;
+
+    let container = Arc::new(Container::new().await?);
+    let service = container.blog_service.clone();
+    let oauth_client = container.oauth_client.clone();
+
     let schema: GQLSchema<BlogRepositoryImpl> = Schema::build(
         Query {
             blog_service: service.clone(),
         },
         Mutation {
             blog_service: service.clone(),
+            client: oauth_client.clone(),
         },
         EmptySubscription,
     )
     .finish();
+    let mut file = File::create("schema.graphql").unwrap();
+    let schema_text = format!(
+        r"# Auto generated. DO NOT EDIT.
+{}",
+        schema.sdl()
+    );
+    let _ = file.write_all(schema_text.as_bytes());
     let app = Router::new()
         .route(
             "/",
             get(graphiql).post(graphql_handler::<BlogRepositoryImpl>),
         )
         .layer(Extension(schema))
+        .route("/callback", get(callback_handler))
+        .with_state(container)
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::exact(HeaderValue::from_static(

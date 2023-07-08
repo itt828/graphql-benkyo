@@ -3,6 +3,7 @@ WORKDIR /srv/blog
 COPY ./Cargo.toml /srv/blog/Cargo.toml
 COPY ./Cargo.lock /srv/blog/Cargo.lock
 COPY ./src /srv/blog/src
+COPY ./.env /srv/blog/.env
 COPY ./schema.graphql /srv/blog/schema.graphql
 
 RUN cargo install cargo-watch

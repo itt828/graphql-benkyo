@@ -1,7 +1,11 @@
+pub mod session;
 use crate::service::blog::{BlogService, BlogServiceImpl};
 use async_graphql::{EmptySubscription, Object, Schema, SimpleObject, ID};
+use oauth2::basic::BasicClient;
 use std::{str::FromStr, sync::Arc};
 use uuid::Uuid;
+
+use self::session::session_handler;
 
 pub type GQLSchema<R> =
     Schema<Query<BlogServiceImpl<R>>, Mutation<BlogServiceImpl<R>>, EmptySubscription>;
@@ -28,6 +32,7 @@ impl<BS: BlogService + Sync + Send> Query<BS> {
 
 pub struct Mutation<BS: BlogService> {
     pub blog_service: Arc<BS>,
+    pub client: BasicClient,
 }
 
 #[Object]
@@ -35,6 +40,11 @@ impl<BS: BlogService + Sync + Send> Mutation<BS> {
     pub async fn add_blog(&self, title: String, content: String) -> anyhow::Result<Blog> {
         let blog = self.blog_service.create_blog(&title, &content).await?;
         Ok(blog.into())
+    }
+    pub async fn login(&self) -> anyhow::Result<AuthUrl> {
+        Ok(AuthUrl {
+            url: session_handler(&self.client).await,
+        })
     }
 }
 
@@ -66,4 +76,9 @@ impl From<crate::domain::blog::Blog> for Blog {
             content: blog.content,
         }
     }
+}
+
+#[derive(SimpleObject)]
+pub struct AuthUrl {
+    url: String,
 }
