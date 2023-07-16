@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use uuid::Uuid;
 
 use crate::domain::user::User;
 
@@ -7,7 +6,7 @@ use crate::domain::user::User;
 pub trait UserService {
     // async fn get_me(&self) -> anyhow::Result<User>;
     // async fn get_user(&self, id: Uuid) -> anyhow::Result<User>;
-    // async fn add_user(&self, name: &str) -> anyhow::Result<User>;
+    async fn add_user(&self, name: &str) -> anyhow::Result<User>;
 }
 pub struct UserServiceImpl;
 
@@ -15,5 +14,9 @@ pub struct UserServiceImpl;
 impl UserService for UserServiceImpl {
     // async fn get_me(&self) -> anyhow::Result<User> {}
     // // async fn get_user(&self, id: Uuid) -> anyhow::Result<User> {}
-    // async fn add_user(&self, name: &str) -> anyhow::Result<User> {}
+    async fn add_user(&self, _name: &str) -> anyhow::Result<User> {
+        // if exist -> error
+        // not -> return new user
+        anyhow::bail!("unimplemented")
+    }
 }

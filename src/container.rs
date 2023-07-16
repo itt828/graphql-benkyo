@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
 use crate::{
-    domain::blog,
     repository::mysql::{blog::BlogRepositoryImpl, connect_db},
-    service::blog::BlogServiceImpl,
+    service::{blog::BlogServiceImpl, user::UserServiceImpl},
     session::oauth_client,
 };
 use oauth2::basic::BasicClient;
@@ -11,6 +10,7 @@ use oauth2::basic::BasicClient;
 #[derive(Clone)]
 pub struct Container {
     pub blog_service: Arc<BlogServiceImpl<BlogRepositoryImpl>>,
+    pub user_service: Arc<UserServiceImpl>,
     pub oauth_client: BasicClient,
 }
 
@@ -22,8 +22,10 @@ impl Container {
         });
         let blog_service = Arc::new(BlogServiceImpl { repository });
         let oauth_client = oauth_client().await?;
+        let user_service = Arc::new(UserServiceImpl);
         Ok(Self {
             blog_service,
+            user_service,
             oauth_client,
         })
     }

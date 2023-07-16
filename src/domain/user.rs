@@ -2,6 +2,7 @@ use uuid::Uuid;
 
 use super::error::BlogError;
 
+#[derive(Debug)]
 pub struct User {
     pub id: Uuid,
     pub name: String,

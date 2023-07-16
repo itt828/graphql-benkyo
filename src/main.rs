@@ -1,4 +1,3 @@
-use anyhow::Context;
 use async_graphql::{http::GraphiQLSource, EmptySubscription, Schema};
 use async_graphql_axum::{GraphQLRequest, GraphQLResponse};
 use axum::{
@@ -13,18 +12,11 @@ use blog::{
         graphql::{GQLSchema, Mutation, Query},
         session::callback_handler,
     },
-    repository::{
-        blog::BlogRepository,
-        mysql::{blog::BlogRepositoryImpl, connect_db},
-    },
-    service::{
-        blog::BlogServiceImpl,
-        user::{UserService, UserServiceImpl},
-    },
-    session::oauth_client,
+    repository::{blog::BlogRepository, mysql::blog::BlogRepositoryImpl},
+    utils::gen_graphql_schema_file,
 };
-use std::{fs::File, io::Write};
 use std::{net::SocketAddr, sync::Arc};
+use tower_cookies::CookieManagerLayer;
 use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 
 async fn graphql_handler<R: BlogRepository + Send + Sync + 'static>(
@@ -44,7 +36,6 @@ async fn main() -> anyhow::Result<()> {
     let container = Arc::new(Container::new().await?);
     let service = container.blog_service.clone();
     let oauth_client = container.oauth_client.clone();
-
     let schema: GQLSchema<BlogRepositoryImpl> = Schema::build(
         Query {
             blog_service: service.clone(),
@@ -56,13 +47,8 @@ async fn main() -> anyhow::Result<()> {
         EmptySubscription,
     )
     .finish();
-    let mut file = File::create("schema.graphql").unwrap();
-    let schema_text = format!(
-        r"# Auto generated. DO NOT EDIT.
-{}",
-        schema.sdl()
-    );
-    let _ = file.write_all(schema_text.as_bytes());
+    gen_graphql_schema_file(&schema);
+
     let app = Router::new()
         .route(
             "/",
@@ -70,6 +56,7 @@ async fn main() -> anyhow::Result<()> {
         )
         .layer(Extension(schema))
         .route("/callback", get(callback_handler))
+        .layer(CookieManagerLayer::new())
         .with_state(container)
         .layer(
             CorsLayer::new()
