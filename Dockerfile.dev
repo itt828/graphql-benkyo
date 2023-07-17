@@ -7,4 +7,4 @@ COPY ./.env /srv/blog/.env
 COPY ./schema.graphql /srv/blog/schema.graphql
 
 RUN cargo install cargo-watch
-CMD [ "cargo", "watch" ]
+CMD [ "cargo", "watch", "-x", "run" ]
