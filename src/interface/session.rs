@@ -9,7 +9,7 @@ use serde::Deserialize;
 use serde_json::Value;
 use tower_cookies::{Cookie, Cookies};
 
-use crate::{container::Container, service::user::UserService, utils::gen_rand_alphanumeric};
+use crate::{modules::Container, service::user::UserService, utils::gen_rand_alphanumeric};
 
 #[derive(Deserialize)]
 pub struct CallbackParams {

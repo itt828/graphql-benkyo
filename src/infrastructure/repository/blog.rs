@@ -1,9 +1,9 @@
-use crate::{domain::blog::BlogTitle, repository::blog::BlogRepository};
+use crate::domain::{model::blog::BlogTitle, repository::blog::BlogRepository};
 use sqlx::{Executor, MySqlPool};
 use std::{str::FromStr, sync::Arc};
 use uuid::Uuid;
 
-type DomainBlog = crate::domain::blog::Blog;
+type DomainBlog = crate::domain::model::blog::Blog;
 
 #[derive(sqlx::FromRow)]
 struct Blog {
@@ -26,6 +26,12 @@ impl From<Blog> for DomainBlog {
 
 pub struct BlogRepositoryImpl {
     pub pool: Arc<MySqlPool>,
+}
+
+impl BlogRepositoryImpl {
+    pub fn new(pool: Arc<MySqlPool>) -> Self {
+        Self { pool }
+    }
 }
 
 #[async_trait::async_trait]
@@ -52,6 +58,9 @@ impl BlogRepository for BlogRepositoryImpl {
             .bind(blog.title.0.clone())
             .bind(blog.content.clone());
         pool.execute(query).await?;
+        Ok(())
+    }
+    async fn delete_blog(&self, _id: uuid::Uuid) -> anyhow::Result<()> {
         Ok(())
     }
 }
