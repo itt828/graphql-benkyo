@@ -19,7 +19,7 @@ impl RepositoriesModuleExt for RepositoriesModule {
 }
 impl RepositoriesModule {
     pub fn new(pool: Arc<MySqlPool>) -> Self {
-        let blog_repository = BlogRepositoryImpl::new(pool.clone());
+        let blog_repository = BlogRepositoryImpl::new(pool);
         Self { blog_repository }
     }
 }
