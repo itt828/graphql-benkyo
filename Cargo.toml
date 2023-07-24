@@ -11,6 +11,7 @@ async-graphql = "5.0.10"
 async-graphql-axum = "5.0.10"
 async-trait = "0.1.68"
 axum = "0.6.18"
+axum-extra = { version = "0.7.5", features = ["cookie"] }
 dotenvy = "0.15.7"
 log = "0.4.19"
 oauth2 = "4.4.1"

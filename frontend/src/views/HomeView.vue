@@ -19,16 +19,14 @@ const blogs = computed(() => result.value?.blogs)
 const { mutate: login } = useMutation(
   graphql(`
     mutation Login {
-      login {
-        url
-      }
+      login
     }
   `)
 )
 
 const onClick = async () => {
   const result = await login()
-  window.location.assign(result?.data?.login.url!)
+  window.location.assign(result?.data?.login!)
 }
 </script>
 

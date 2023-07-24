@@ -1,15 +1,15 @@
-use std::sync::Arc;
-
+use super::modules::Modules;
+use crate::utils::gen_rand_alphanumeric;
 use axum::{
     extract::{Query, State},
     response::{IntoResponse, Redirect},
 };
+use axum_extra::extract::cookie::{Cookie, CookieJar};
 use oauth2::{reqwest::async_http_client, AuthorizationCode, TokenResponse};
+use reqwest::StatusCode;
 use serde::Deserialize;
 use serde_json::Value;
-use tower_cookies::{Cookie, Cookies};
-
-use crate::{modules::Container, service::user::UserService, utils::gen_rand_alphanumeric};
+use std::sync::Arc;
 
 #[derive(Deserialize)]
 pub struct CallbackParams {
@@ -18,10 +18,10 @@ pub struct CallbackParams {
 
 pub async fn callback_handler(
     Query(query): Query<CallbackParams>,
-    cookies: Cookies,
-    State(container): State<Arc<Container>>,
-) -> impl IntoResponse {
-    let token = container
+    jar: CookieJar,
+    State(modules): State<Arc<Modules>>,
+) -> Result<(CookieJar, Redirect), StatusCode> {
+    let token = modules
         .oauth_client
         .exchange_code(AuthorizationCode::new(query.code.clone()))
         // .set_pkce_verifier(pkce_verifier)
@@ -42,12 +42,10 @@ pub async fn callback_handler(
         .json::<Value>()
         .await
         .unwrap();
-    let user = container
-        .user_service
-        .add_user(me["id"].as_str().unwrap())
-        .await
-        .unwrap();
-    println!("{:?}", user);
-    cookies.add(Cookie::new("blog_session", gen_rand_alphanumeric(36)));
-    Redirect::to("http://localhost:3030/")
+    // let user = modules.add_user(me["id"].as_str().unwrap()).await.unwrap();
+    // println!("{:?}", user);
+    Ok((
+        jar.add(Cookie::new("blog_session", gen_rand_alphanumeric(36))),
+        Redirect::to("http://localhost:3030/"),
+    ))
 }
