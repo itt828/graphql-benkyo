@@ -1,6 +1,6 @@
 use crate::interface::graphql::{graphiql, graphql_handler, init_schema};
 use crate::interface::session::callback_handler;
-use crate::utils::gen_graphql_schema_file;
+use crate::utils::{gen_graphql_schema_file, oauth_client};
 
 use self::modules::Modules;
 use axum::http::HeaderValue;
@@ -16,13 +16,15 @@ pub mod modules;
 pub mod session;
 
 pub async fn startup(modules: Arc<Modules>) -> anyhow::Result<()> {
-    let schema = init_schema(modules.clone());
+    let oauth_client = oauth_client().await?;
+    let schema = init_schema(modules.clone(), oauth_client.clone());
     gen_graphql_schema_file(&schema);
     let app = Router::new()
         .route("/", get(graphiql).post(graphql_handler))
         .layer(Extension(schema))
         .route("/auth/callback", get(callback_handler))
         .layer(CookieManagerLayer::new())
+        .with_state((modules, oauth_client))
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::exact(HeaderValue::from_static(
@@ -30,8 +32,7 @@ pub async fn startup(modules: Arc<Modules>) -> anyhow::Result<()> {
                 )))
                 .allow_methods(Any)
                 .allow_headers(Any),
-        )
-        .with_state(modules);
+        );
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     println!("listening on {}", addr);
     axum::Server::bind(&addr)

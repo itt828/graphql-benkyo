@@ -13,6 +13,7 @@ async-trait = "0.1.68"
 axum = "0.6.18"
 axum-extra = { version = "0.7.5", features = ["cookie"] }
 dotenvy = "0.15.7"
+jsonwebtoken = "8.3.0"
 log = "0.4.19"
 oauth2 = "4.4.1"
 rand = "0.8.5"

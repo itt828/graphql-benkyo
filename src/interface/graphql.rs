@@ -6,6 +6,7 @@ use axum::{
     response::{self, IntoResponse},
     Extension,
 };
+use oauth2::basic::BasicClient;
 
 use self::{mutation::Mutation, query::Query};
 
@@ -15,12 +16,18 @@ pub mod model;
 pub mod mutation;
 pub mod query;
 
-pub fn init_schema(modules: Arc<Modules>) -> Schema<Query, Mutation, EmptySubscription> {
+pub fn init_schema(
+    modules: Arc<Modules>,
+    oauth_client: BasicClient,
+) -> Schema<Query, Mutation, EmptySubscription> {
     Schema::build(
         Query {
             modules: modules.clone(),
         },
-        Mutation { modules },
+        Mutation {
+            modules,
+            oauth_client,
+        },
         EmptySubscription,
     )
     .finish()

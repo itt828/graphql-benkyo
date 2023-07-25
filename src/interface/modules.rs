@@ -6,19 +6,19 @@ use crate::{
         module::{RepositoriesModule, RepositoriesModuleExt},
         repository::connect_db,
     },
-    usecase::blog::BlogUseCase,
+    usecase::{blog::BlogUseCase, user::UserUseCase},
     utils::oauth_client,
 };
 
 pub struct Modules {
     pub blog_use_case: BlogUseCase<RepositoriesModule>,
-    pub oauth_client: BasicClient,
+    pub user_use_case: UserUseCase<RepositoriesModule>,
 }
 
 pub trait ModulesExt {
     type RemositoriesModule: RepositoriesModuleExt;
     fn blog_use_case(&self) -> &BlogUseCase<RepositoriesModule>;
-    fn oauth_client(&self) -> &BasicClient;
+    fn user_use_case(&self) -> &UserUseCase<RepositoriesModule>;
 }
 
 impl ModulesExt for Modules {
@@ -26,8 +26,8 @@ impl ModulesExt for Modules {
     fn blog_use_case(&self) -> &BlogUseCase<RepositoriesModule> {
         &self.blog_use_case
     }
-    fn oauth_client(&self) -> &BasicClient {
-        &self.oauth_client
+    fn user_use_case(&self) -> &UserUseCase<RepositoriesModule> {
+        &self.user_use_case
     }
 }
 
@@ -36,12 +36,12 @@ impl Modules {
         let pool = Arc::new(connect_db().await?);
         let repositories_module = Arc::new(RepositoriesModule::new(pool));
 
-        let blog_use_case = BlogUseCase::new(repositories_module).await;
-        let oauth_client = oauth_client().await?;
+        let blog_use_case = BlogUseCase::new(repositories_module.clone()).await;
+        let user_use_case = UserUseCase::new(repositories_module).await;
 
         Ok(Self {
             blog_use_case,
-            oauth_client,
+            user_use_case,
         })
     }
 }
