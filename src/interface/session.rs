@@ -1,7 +1,10 @@
 use super::modules::{Modules, ModulesExt};
 use crate::{
-    domain::model::session::AuthPayload, usecase::session::gen_cookie_jwt,
-    utils::gen_rand_alphanumeric,
+    domain::model::session::AuthPayload,
+    usecase::{
+        oidc::{google_oidc_callback, google_oidc_login},
+        session::gen_cookie_jwt,
+    },
 };
 use axum::{
     extract::{Query, State},
@@ -9,12 +12,27 @@ use axum::{
     http::HeaderMap,
     response::{IntoResponse, Redirect},
 };
-use oauth2::{basic::BasicClient, reqwest::async_http_client, AuthorizationCode, TokenResponse};
+use axum_extra::extract::{cookie::Cookie, CookieJar};
+use openidconnect::{core::CoreClient, Nonce, PkceCodeVerifier};
 use reqwest::StatusCode;
 use serde::Deserialize;
 use serde_json::Value;
 use std::sync::Arc;
-use tower_cookies::{Cookie, Cookies};
+pub async fn login_handler(
+    State((modules, oidc_client)): State<(Arc<Modules>, Arc<CoreClient>)>,
+    jar: CookieJar,
+) -> Result<(CookieJar, Redirect), StatusCode> {
+    let a = match google_oidc_login(&oidc_client).await {
+        Ok(v) => v,
+        Err(e) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+    };
+    let jar = jar.add(Cookie::new(
+        "code_verifier",
+        a.pkce_veriifier.secret().to_string(),
+    ));
+    let jar = jar.add(Cookie::new("nonce", a.nonce.secret().to_string()));
+    Ok((jar, Redirect::to(&a.url)))
+}
 
 #[derive(Debug, Deserialize)]
 pub struct CallbackParams {
@@ -24,32 +42,31 @@ pub struct CallbackParams {
 
 pub async fn callback_handler(
     Query(query): Query<CallbackParams>,
-    cookies: Cookies,
-    State((modules, oauth_client)): State<(Arc<Modules>, BasicClient)>,
-) -> Result<Redirect, StatusCode> {
-    let token = oauth_client.exchange_code(AuthorizationCode::new(query.code.clone()));
-    // .set_pkce_verifier(pkce_verifier)
-    let token = token.request_async(async_http_client).await.unwrap();
-    let client = reqwest::Client::new();
-    let me = client
-        .get("https://api.github.com/user")
-        .header(
-            "Authorization",
-            format!("token {}", token.access_token().secret()),
-        )
-        .header("User-Agent", "itt-blog-server")
-        .send()
-        .await
-        .unwrap()
-        .json::<Value>()
-        .await
-        .unwrap();
-    let user = me["id"].as_str().unwrap();
-    modules.user_use_case().register_user(user).await;
+    jar: CookieJar,
+    State((modules, oidc_client)): State<(Arc<Modules>, Arc<CoreClient>)>,
+) -> Result<(CookieJar, Redirect), StatusCode> {
+    let code_verifier = jar
+        .get("code_verifier")
+        .ok_or(StatusCode::INTERNAL_SERVER_ERROR)?
+        .to_string();
+    let nonce = jar
+        .get("nonce")
+        .ok_or(StatusCode::INTERNAL_SERVER_ERROR)?
+        .to_string();
+    google_oidc_callback(
+        &oidc_client,
+        PkceCodeVerifier::new(code_verifier),
+        &Nonce::new(nonce),
+    )
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
     let auth_payload = AuthPayload {
-        id: user.to_string(),
+        id: "sample".to_string(),
     };
     let jwt = gen_cookie_jwt(auth_payload).await.unwrap();
-    cookies.add(Cookie::new("blog_session_jwt", jwt));
-    Ok(Redirect::to("http://localhost:3030/"))
+    Ok((
+        jar.add(Cookie::new("blog_session_jwt", jwt)),
+        Redirect::to("http://localhost:3030/"),
+    ))
 }

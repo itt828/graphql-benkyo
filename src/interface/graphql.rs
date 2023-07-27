@@ -6,7 +6,7 @@ use axum::{
     response::{self, IntoResponse},
     Extension,
 };
-use oauth2::basic::BasicClient;
+use openidconnect::core::CoreClient;
 
 use self::{mutation::Mutation, query::Query};
 
@@ -18,7 +18,7 @@ pub mod query;
 
 pub fn init_schema(
     modules: Arc<Modules>,
-    oauth_client: BasicClient,
+    oidc_client: Arc<CoreClient>,
 ) -> Schema<Query, Mutation, EmptySubscription> {
     Schema::build(
         Query {
@@ -26,7 +26,7 @@ pub fn init_schema(
         },
         Mutation {
             modules,
-            oauth_client,
+            oidc_client,
         },
         EmptySubscription,
     )

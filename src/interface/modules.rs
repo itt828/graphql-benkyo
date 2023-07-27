@@ -1,4 +1,3 @@
-use oauth2::basic::BasicClient;
 use std::sync::Arc;
 
 use crate::{
@@ -7,7 +6,6 @@ use crate::{
         repository::connect_db,
     },
     usecase::{blog::BlogUseCase, user::UserUseCase},
-    utils::oauth_client,
 };
 
 pub struct Modules {
