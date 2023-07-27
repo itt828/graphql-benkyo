@@ -1,4 +1,4 @@
-use super::modules::{Modules, ModulesExt};
+use super::modules::Modules;
 use crate::{
     domain::model::session::AuthPayload,
     usecase::{
@@ -8,23 +8,21 @@ use crate::{
 };
 use axum::{
     extract::{Query, State},
-    headers::Header,
-    http::HeaderMap,
-    response::{IntoResponse, Redirect},
+    response::Redirect,
 };
 use axum_extra::extract::{cookie::Cookie, CookieJar};
 use openidconnect::{core::CoreClient, Nonce, PkceCodeVerifier};
 use reqwest::StatusCode;
 use serde::Deserialize;
-use serde_json::Value;
+
 use std::sync::Arc;
 pub async fn login_handler(
-    State((modules, oidc_client)): State<(Arc<Modules>, Arc<CoreClient>)>,
+    State((_modules, oidc_client)): State<(Arc<Modules>, Arc<CoreClient>)>,
     jar: CookieJar,
 ) -> Result<(CookieJar, Redirect), StatusCode> {
     let a = match google_oidc_login(&oidc_client).await {
         Ok(v) => v,
-        Err(e) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(_e) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
     };
     let jar = jar.add(Cookie::new(
         "code_verifier",
@@ -34,6 +32,7 @@ pub async fn login_handler(
     Ok((jar, Redirect::to(&a.url)))
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct CallbackParams {
     code: String,
@@ -41,9 +40,9 @@ pub struct CallbackParams {
 }
 
 pub async fn callback_handler(
-    Query(query): Query<CallbackParams>,
+    Query(_query): Query<CallbackParams>,
     jar: CookieJar,
-    State((modules, oidc_client)): State<(Arc<Modules>, Arc<CoreClient>)>,
+    State((_modules, oidc_client)): State<(Arc<Modules>, Arc<CoreClient>)>,
 ) -> Result<(CookieJar, Redirect), StatusCode> {
     let code_verifier = jar
         .get("code_verifier")

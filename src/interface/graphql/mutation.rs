@@ -1,5 +1,5 @@
 use super::model::Blog;
-use crate::{interface::modules::Modules, usecase::oidc::google_oidc_login};
+use crate::interface::modules::Modules;
 use async_graphql::Object;
 use openidconnect::core::CoreClient;
 use std::sync::Arc;
