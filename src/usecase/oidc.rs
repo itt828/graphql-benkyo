@@ -2,19 +2,20 @@ use anyhow::anyhow;
 use derive_new::new;
 use openidconnect::{
     core::{CoreAuthenticationFlow, CoreClient, CoreProviderMetadata},
-    reqwest::{async_http_client, http_client},
+    reqwest::async_http_client,
     AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
     OAuth2TokenResponse, PkceCodeChallenge, PkceCodeVerifier, Scope, TokenResponse,
 };
 use std::env;
 
-pub fn init_google_oidc_client() -> anyhow::Result<CoreClient> {
+pub async fn init_google_oidc_client() -> anyhow::Result<CoreClient> {
     let client_id = env::var("CLIENT_ID")?;
     let client_secret = env::var("CLIENT_SECRET")?;
-    let provider_metadata = CoreProviderMetadata::discover(
-        &IssuerUrl::new("https://accounts.google.com".to_string())?,
-        http_client,
-    )?;
+    let provider_metadata = CoreProviderMetadata::discover_async(
+        IssuerUrl::new("https://accounts.google.com".to_string())?,
+        async_http_client,
+    )
+    .await?;
     let client = CoreClient::from_provider_metadata(
         provider_metadata,
         ClientId::new(client_id),

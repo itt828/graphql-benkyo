@@ -18,7 +18,7 @@ pub mod session;
 
 pub async fn startup(modules: Arc<Modules>) -> anyhow::Result<()> {
     // let oauth_client = oauth_client().await?;
-    let oidc_client = Arc::new(init_google_oidc_client()?);
+    let oidc_client = Arc::new(init_google_oidc_client().await?);
     let schema = init_schema(modules.clone(), oidc_client.clone());
     gen_graphql_schema_file(&schema);
     let app = Router::new()
