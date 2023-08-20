@@ -342,33 +342,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "blog"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-graphql",
- "async-graphql-axum",
- "async-trait",
- "axum",
- "axum-extra",
- "derive-new",
- "dotenvy",
- "jsonwebtoken",
- "log",
- "openidconnect",
- "rand",
- "reqwest",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror",
- "tokio",
- "tower-cookies",
- "tower-http",
- "uuid",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1260,6 +1233,33 @@ name = "linux-raw-sys"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef53942eb7bf7ff43a617b3e2c1c4a5ecf5944a7c1bc12d7ee39bbb15e5c1519"
+
+[[package]]
+name = "loc-share"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-graphql",
+ "async-graphql-axum",
+ "async-trait",
+ "axum",
+ "axum-extra",
+ "derive-new",
+ "dotenvy",
+ "jsonwebtoken",
+ "log",
+ "openidconnect",
+ "rand",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tower-cookies",
+ "tower-http",
+ "uuid",
+]
 
 [[package]]
 name = "lock_api"
