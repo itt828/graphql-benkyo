@@ -1,7 +1,6 @@
 use crate::interface::graphql::{graphiql, graphql_handler, init_schema};
+use crate::interface::session::oidc::init_google_oidc_client;
 use crate::interface::session::{callback_handler, login_handler};
-use crate::usecase::oidc::init_google_oidc_client;
-// use crate::interface::session::callback_handler;
 use crate::utils::gen_graphql_schema_file;
 
 use self::modules::Modules;
@@ -17,7 +16,6 @@ pub mod modules;
 pub mod session;
 
 pub async fn startup(modules: Arc<Modules>) -> anyhow::Result<()> {
-    // let oauth_client = oauth_client().await?;
     let oidc_client = Arc::new(init_google_oidc_client().await?);
     let schema = init_schema(modules.clone(), oidc_client.clone());
     gen_graphql_schema_file(&schema);

@@ -1,8 +1,5 @@
-use crate::{
-    infrastructure::module::RepositoriesModuleExt,
-};
+use crate::infrastructure::module::RepositoriesModuleExt;
 use std::sync::Arc;
-
 
 pub struct UserUseCase<R: RepositoriesModuleExt> {
     pub repositories: Arc<R>,
