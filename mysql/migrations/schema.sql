@@ -1,14 +1,14 @@
-drop table if exists `blog`;
+drop table if exists post;
 
-create table if not exists `blog` (
-    `id` CHAR(36) not null primary key,
-    `title` text not null,
-    `content` text not null,
-    `created_at` datetime not null default current_timestamp
+create table if not exists post (
+    id CHAR(36) not null primary key,
+    avater_id CHAR(36) not null,
+    emoji_id CHAR(36) not null,
+    place_id CHAR(36) not null,
+    title text not null,
+    comment text not null,
+    visited_at datetime not null,
+    created_at datetime not null,
+    updated_at datetime not null 
 );
 
--- create table if not exists `oauth`(
---     `csrf_state` text not null,
---     `pkce_code_verifier` text not null,
---     `return_url` text not null
--- )

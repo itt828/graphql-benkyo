@@ -1,31 +1,40 @@
 use async_graphql::{SimpleObject, ID};
 
 #[derive(SimpleObject)]
-pub struct Blog {
+pub struct Post {
     id: ID,
+    avater: Avater,
+    emoji: Emoji,
+    place: Place,
     title: String,
-    tags: Vec<Tag>,
-    content: String,
+    comment: String,
+    visited_at: String,
+    created_at: String,
+    updated_at: String,
 }
 
 #[derive(SimpleObject)]
-struct User {
-    id: ID,
-    name: String,
-}
-#[derive(SimpleObject)]
-pub struct Tag {
+pub struct Avater {
     id: ID,
     name: String,
 }
 
-impl From<crate::domain::model::blog::Blog> for Blog {
-    fn from(blog: crate::domain::model::blog::Blog) -> Self {
-        Blog {
-            id: ID(blog.id.to_string()),
-            title: blog.title.0,
-            tags: vec![],
-            content: blog.content,
-        }
-    }
+#[derive(SimpleObject)]
+pub struct Emoji {
+    id: ID,
+    name: String,
+}
+
+#[derive(SimpleObject)]
+pub struct Place {
+    id: ID,
+    name: String,
+    address: String,
+}
+
+#[derive(SimpleObject)]
+pub struct Account {
+    id: ID,
+    email: String,
+    avaters: Vec<Avater>,
 }

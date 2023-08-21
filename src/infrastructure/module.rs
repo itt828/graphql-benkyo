@@ -1,25 +1,27 @@
-use super::repository::blog::BlogRepositoryImpl;
-use crate::domain::repository::blog::BlogRepository;
 use sqlx::MySqlPool;
 use std::sync::Arc;
 
+use crate::domain::repository::post::PostRepository;
+
+use super::repository::post::PostRepositoryImpl;
+
 pub struct RepositoriesModule {
-    pub blog_repository: BlogRepositoryImpl,
+    pub post_repository: PostRepositoryImpl,
     // pub user_repository: UserRepositoryImpl
 }
 pub trait RepositoriesModuleExt {
-    type BlogRepo: BlogRepository;
-    fn blog_repository(&self) -> &Self::BlogRepo;
+    type PostRepo: PostRepository;
+    fn post_repository(&self) -> &Self::PostRepo;
 }
 impl RepositoriesModuleExt for RepositoriesModule {
-    type BlogRepo = BlogRepositoryImpl;
-    fn blog_repository(&self) -> &Self::BlogRepo {
-        &self.blog_repository
+    type PostRepo = PostRepositoryImpl;
+    fn post_repository(&self) -> &Self::PostRepo {
+        &self.post_repository
     }
 }
 impl RepositoriesModule {
     pub fn new(pool: Arc<MySqlPool>) -> Self {
-        let blog_repository = BlogRepositoryImpl::new(pool);
-        Self { blog_repository }
+        let post_repository = PostRepositoryImpl::new(pool);
+        Self { post_repository }
     }
 }

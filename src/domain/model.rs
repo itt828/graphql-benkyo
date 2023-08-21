@@ -1,4 +1,3 @@
-pub mod blog;
+pub mod avater;
 pub mod error;
-pub mod tag;
-pub mod user;
+pub mod post;

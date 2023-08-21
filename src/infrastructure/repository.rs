@@ -2,7 +2,7 @@ use sqlx::mysql::MySqlConnectOptions;
 use sqlx::mysql::MySqlPoolOptions;
 use sqlx::MySqlPool;
 
-pub mod blog;
+pub mod post;
 
 pub async fn connect_db() -> anyhow::Result<MySqlPool> {
     let mysql_config = MySqlConnectOptions::new()
