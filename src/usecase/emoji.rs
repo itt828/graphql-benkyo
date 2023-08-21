@@ -21,4 +21,10 @@ where
     pub async fn get_emoji(&self, id: Uuid) -> anyhow::Result<Option<Emoji>> {
         self.repositories.emoji_repository().get_emoji(id).await
     }
+    pub async fn register_emojis(&self, emojis: &[Emoji]) -> anyhow::Result<()> {
+        self.repositories
+            .emoji_repository()
+            .register_emojis(emojis)
+            .await
+    }
 }

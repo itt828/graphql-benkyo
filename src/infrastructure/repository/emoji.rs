@@ -15,7 +15,19 @@ impl EmojiRepositoryImpl {
 
 #[async_trait::async_trait]
 impl EmojiRepository for EmojiRepositoryImpl {
-    async fn get_emoji(&self, avater_id: Uuid) -> anyhow::Result<Option<Emoji>> {
+    async fn get_emoji(&self, emoji_id: Uuid) -> anyhow::Result<Option<Emoji>> {
         Ok(None)
+    }
+    async fn register_emojis(&self, emojis: &[Emoji]) -> anyhow::Result<()> {
+        let pool = self.pool.clone();
+        let mut query = sqlx::QueryBuilder::new(r"insert into emoji (id, name)");
+        query.push_values(emojis.iter(), |mut b, emoji| {
+            b.push_bind(emoji.id.to_string())
+                .push_bind(emoji.name.to_string());
+        });
+        let query = query.build();
+        query.execute(&*pool).await?;
+        // query.fetch(&*pool).await?;
+        Ok(())
     }
 }

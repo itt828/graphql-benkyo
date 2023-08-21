@@ -18,7 +18,7 @@ pub struct Post {
 #[derive(Clone, Debug, Deserialize, sqlx::FromRow)]
 pub struct Emoji {
     pub id: Uuid,
-    pub name: Uuid,
+    pub name: String,
 }
 
 #[derive(Clone, Debug, Deserialize, sqlx::FromRow)]
