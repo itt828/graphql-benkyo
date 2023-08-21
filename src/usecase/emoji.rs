@@ -1,0 +1,24 @@
+use std::sync::Arc;
+
+use uuid::Uuid;
+
+use crate::{
+    domain::{model::post::Emoji, repository::emoji::EmojiRepository},
+    infrastructure::module::RepositoriesModuleExt,
+};
+
+pub struct EmojiUseCase<R: RepositoriesModuleExt> {
+    pub repositories: Arc<R>,
+}
+
+impl<R> EmojiUseCase<R>
+where
+    R: RepositoriesModuleExt,
+{
+    pub async fn new(repositories: Arc<R>) -> Self {
+        Self { repositories }
+    }
+    pub async fn get_emoji(&self, id: Uuid) -> anyhow::Result<Option<Emoji>> {
+        self.repositories.emoji_repository().get_emoji(id).await
+    }
+}
