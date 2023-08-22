@@ -1,4 +1,3 @@
-use chrono::{DateTime, TimeZone, Utc};
 use sqlx::{Executor, MySqlPool};
 use std::sync::Arc;
 use uuid::Uuid;
@@ -22,15 +21,16 @@ impl PostRepositoryImpl {
 impl PostRepository for PostRepositoryImpl {
     async fn get_post(&self, id: uuid::Uuid) -> anyhow::Result<Option<Post>> {
         let pool = self.pool.clone();
-        let post: Option<PostRecord> = sqlx::query_as(r"select * from post where id=?")
+        let post: Option<Post> = sqlx::query_as(r"select * from post where id=?")
             .bind(id.to_string())
             .fetch_optional(&*pool)
-            .await?;
-        Ok(post.map(|v| v.into()))
+            .await
+            .expect("hoge");
+        Ok(post)
     }
     async fn get_posts(&self) -> anyhow::Result<Vec<Post>> {
         let pool = self.pool.clone();
-        let blog: Vec<PostRecord> = sqlx::query_as(r"SELECT * FROM post")
+        let blog: Vec<Post> = sqlx::query_as(r"SELECT * FROM post")
             .fetch_all(&*pool)
             .await?;
         Ok(blog.into_iter().map(|b| b.into()).collect())
@@ -44,9 +44,9 @@ impl PostRepository for PostRepositoryImpl {
             .bind(post.place_id.clone().to_string())
             .bind(post.title.clone())
             .bind(post.comment.clone())
-            .bind(post.visited_at.clone().to_string())
-            .bind(post.created_at.clone().to_string())
-            .bind(post.updated_at.clone().to_string()) ;
+            .bind(post.visited_at.clone())
+            .bind(post.created_at.clone())
+            .bind(post.updated_at.clone()) ;
         pool.execute(query).await?;
         Ok(())
     }
@@ -75,7 +75,7 @@ impl PostRepository for PostRepositoryImpl {
         }
         query.push("where id =");
         query.push_bind(post_id.to_string());
-        let mut query = query.build_query_as::<PostRecord>();
+        let query = query.build_query_as::<Post>();
 
         let post = query.fetch_one(&*pool).await?;
         Ok(post.into())
@@ -89,43 +89,42 @@ impl PostRepository for PostRepositoryImpl {
     }
 }
 
-#[derive(Clone, Debug, sqlx::FromRow)]
-pub struct PostRecord {
-    pub id: String,
-    pub avater_id: String,
-    pub emoji_id: String,
-    pub place_id: String,
-    pub title: String,
-    pub comment: String,
-    pub visited_at: DateTime<Utc>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
+// #[derive(Clone, Debug, sqlx::FromRow)]
+// pub struct PostRecord {
+//     pub id: String,
+//     pub avater_id: String,
+//     pub emoji_id: String,
+//     pub place_id: String,
+//     pub title: String,
+//     pub comment: String,
+//     pub visited_at: DateTime<Utc>,
+//     pub created_at: DateTime<Utc>,
+//     pub updated_at: DateTime<Utc>,
+// }
 
-impl Into<PostRecord> for Post {
-    fn into(self) -> PostRecord {
-        PostRecord {
-            id: self.id.to_string(),
-            avater_id: self.id.to_string(),
-            emoji_id: self.emoji_id.to_string(),
-            place_id: self.place_id.to_string(),
-            ..self.into()
-        }
-    }
-}
+// impl Into<PostRecord> for Post {
+//     fn into(self) -> PostRecord {
+//         PostRecord {
+//             id: self.id.to_string(),
+//             avater_id: self.id.to_string(),
+//             emoji_id: self.emoji_id.to_string(),
+//             place_id: self.place_id.to_string(),
+//         }
+//     }
+// }
 
-impl Into<Post> for PostRecord {
-    fn into(self) -> Post {
-        Post {
-            id: Uuid::try_parse(&self.id).unwrap(),
-            avater_id: Uuid::try_parse(&self.avater_id).unwrap(),
-            emoji_id: Uuid::try_parse(&self.emoji_id).unwrap(),
-            place_id: Uuid::try_parse(&self.place_id).unwrap(),
-            title: self.title,
-            comment: self.comment,
-            visited_at: self.visited_at,
-            created_at: self.created_at,
-            updated_at: self.updated_at,
-        }
-    }
-}
+// impl Into<Post> for PostRecord {
+//     fn into(self) -> Post {
+//         Post {
+//             id: Uuid::try_parse(&self.id).unwrap(),
+//             avater_id: Uuid::try_parse(&self.avater_id).unwrap(),
+//             emoji_id: Uuid::try_parse(&self.emoji_id).unwrap(),
+//             place_id: Uuid::try_parse(&self.place_id).unwrap(),
+//             title: self.title,
+//             comment: self.comment,
+//             visited_at: self.visited_at,
+//             created_at: self.created_at,
+//             updated_at: self.updated_at,
+//         }
+//     }
+// }

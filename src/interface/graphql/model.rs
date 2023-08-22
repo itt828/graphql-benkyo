@@ -1,7 +1,7 @@
 use async_graphql::{SimpleObject, ID};
 
 use crate::domain::model::{
-    post::{Emoji as DomainEmoji, Place as DomainPlace},
+    post::{Emoji as DomainEmoji, Place as DomainPlace, Post as DomainPost},
     user::Avater as DomainAvater,
 };
 

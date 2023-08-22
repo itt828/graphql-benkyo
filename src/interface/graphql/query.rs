@@ -14,7 +14,7 @@ impl Query {
         let post = self
             .modules
             .post_use_case()
-            .get_post(Uuid::from_str(&id.0).unwrap())
+            .get_post(Uuid::parse_str(&id.0)?)
             .await?;
         if let Some(post) = post {
             let avater = self

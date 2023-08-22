@@ -23,4 +23,15 @@ where
             .get_avater(avater_id)
             .await
     }
+    pub async fn register_avater(&self, name: String) -> anyhow::Result<Avater> {
+        let avater = Avater {
+            id: Uuid::new_v4(),
+            name,
+        };
+        self.repositories
+            .user_repository()
+            .register_avater(&avater)
+            .await?;
+        Ok(avater)
+    }
 }

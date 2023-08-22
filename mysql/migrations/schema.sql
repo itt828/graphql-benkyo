@@ -28,4 +28,11 @@ drop table if exists account;
 create table if not exists account(
     id CHAR(36) not null,
     email text not null
-)
+);
+
+drop table if exists place;
+create table if not exists place(
+    id CHAR(36) not null,
+    name text not null,
+    address text not null
+);

@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv()?;
 
     let modules = Arc::new(Modules::new().await?);
-    init_emoji(&modules).await;
+    // init_emoji(&modules).await;
     startup(modules).await?;
 
     Ok(())
