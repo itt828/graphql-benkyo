@@ -37,7 +37,7 @@ impl EmojiRepository for EmojiRepositoryImpl {
                 let mut query = sqlx::query_as(&query_string);
 
                 for emoji_id in emoji_ids.iter() {
-                    query = query.bind(emoji_id);
+                    query = query.bind(emoji_id.to_string());
                 }
 
                 query.fetch_all(&*pool).await?

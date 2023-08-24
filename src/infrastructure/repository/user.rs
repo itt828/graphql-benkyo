@@ -28,19 +28,18 @@ impl UserRepository for UserRepositoryImpl {
         let avaters = match avater_ids {
             Some(avater_ids) => {
                 let query_string = format!(
-                    "select * from avater where id in (?{})",
+                    "select id, name from avater where id in (?{})",
                     ", ?".repeat(avater_ids.len() - 1)
                 );
                 let mut query = sqlx::query_as(&query_string);
 
                 for avater_id in avater_ids.iter() {
-                    query = query.bind(avater_id);
+                    query = query.bind(avater_id.to_string());
                 }
-
                 query.fetch_all(&*pool).await?
             }
             None => {
-                let mut query = sqlx::query_as("select * from avater");
+                let query = sqlx::query_as("select id, name from avater");
                 query.fetch_all(&*pool).await?
             }
         };
@@ -48,8 +47,8 @@ impl UserRepository for UserRepositoryImpl {
     }
     async fn register_avater(&self, avater: &Avater) -> anyhow::Result<()> {
         let pool = self.pool.clone();
-        sqlx::query(r"insert into avater (id, name) values (?, ?)")
-            .bind(avater.id)
+        sqlx::query(r"insert into avater (id, name, account_id) values (?, ?, null)")
+            .bind(avater.id.to_string())
             .bind(avater.name.clone())
             .execute(&*pool)
             .await?;

@@ -35,7 +35,7 @@ impl PlaceRepository for PlaceRepositoryImpl {
                 let mut query = sqlx::query_as(&query_string);
 
                 for place_id in place_ids.iter() {
-                    query = query.bind(place_id);
+                    query = query.bind(place_id.to_string());
                 }
 
                 query.fetch_all(&*pool).await?

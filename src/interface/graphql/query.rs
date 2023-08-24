@@ -87,11 +87,10 @@ impl Query {
             .collect::<HashMap<Uuid, &crate::domain::model::post::Emoji>>();
         let place_ids = posts
             .iter()
-            .map(|item| item.emoji_id)
+            .map(|item| item.place_id)
             .collect::<HashSet<Uuid>>()
             .into_iter()
             .collect::<Vec<_>>();
-        // let places: HashMap<Uuid, &crate::domain::model::post::Place> = self
         let places = self
             .modules
             .place_use_case()
@@ -100,7 +99,6 @@ impl Query {
             let places = places.iter()
             .map(|item| (item.id, item))
             .collect::<HashMap<Uuid, &crate::domain::model::post::Place>>();
-
         Ok(posts
             .iter()
             .map(|item| Post {
