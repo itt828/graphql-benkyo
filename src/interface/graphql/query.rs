@@ -1,7 +1,11 @@
 use super::model::{Avater, Post};
 use crate::interface::modules::{Modules, ModulesExt};
 use async_graphql::{Object, ID};
-use std::{str::FromStr, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+    sync::Arc,
+};
 use uuid::Uuid;
 
 pub struct Query {
@@ -49,7 +53,67 @@ impl Query {
         }
     }
     pub async fn posts(&self) -> anyhow::Result<Vec<Post>> {
-        self.modules.post_use_case.all_posts().await?;
-        Ok(vec![])
+        let posts = self.modules.post_use_case.all_posts().await?;
+        let avater_ids = posts
+            .iter()
+            .map(|item| item.avater_id)
+            .collect::<HashSet<Uuid>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let avaters = self
+            .modules
+            .user_use_case()
+            .get_avaters(Some(avater_ids))
+            .await?;
+        let avaters = avaters
+            .iter()
+            .map(|item| (item.id, item))
+            .collect::<HashMap<Uuid, &crate::domain::model::user::Avater>>();
+        let emoji_ids = posts
+            .iter()
+            .map(|item| item.emoji_id)
+            .collect::<HashSet<Uuid>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        let emojis = 
+        // let emojis: HashMap<Uuid, &crate::domain::model::post::Emoji> = self
+        self.
+            modules
+            .emoji_use_case()
+            .get_emojis(Some(emoji_ids))
+            .await?;
+            let emojis = emojis.iter()
+            .map(|item| (item.id, item))
+            .collect::<HashMap<Uuid, &crate::domain::model::post::Emoji>>();
+        let place_ids = posts
+            .iter()
+            .map(|item| item.emoji_id)
+            .collect::<HashSet<Uuid>>()
+            .into_iter()
+            .collect::<Vec<_>>();
+        // let places: HashMap<Uuid, &crate::domain::model::post::Place> = self
+        let places = self
+            .modules
+            .place_use_case()
+            .get_places(Some(place_ids))
+            .await?;
+            let places = places.iter()
+            .map(|item| (item.id, item))
+            .collect::<HashMap<Uuid, &crate::domain::model::post::Place>>();
+
+        Ok(posts
+            .iter()
+            .map(|item| Post {
+                id: ID(item.id.to_string()),
+                avater: avaters[&item.avater_id].clone().into(),
+                emoji: emojis[&item.emoji_id].clone().into(),
+                place: places[&item.place_id].clone().into(),
+                title: item.title.to_string(),
+                comment: item.comment.to_string(),
+                visited_at: item.visited_at.to_rfc3339(),
+                created_at: item.created_at.to_rfc3339(),
+                updated_at: item.updated_at.to_rfc3339(),
+            })
+            .collect())
     }
 }

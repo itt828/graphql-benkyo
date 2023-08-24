@@ -23,6 +23,12 @@ where
             .get_avater(avater_id)
             .await
     }
+    pub async fn get_avaters(&self, avater_ids: Option<Vec<Uuid>>) -> anyhow::Result<Vec<Avater>> {
+        self.repositories
+            .user_repository()
+            .get_avaters(avater_ids)
+            .await
+    }
     pub async fn register_avater(&self, name: String) -> anyhow::Result<Avater> {
         let avater = Avater {
             id: Uuid::new_v4(),

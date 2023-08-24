@@ -24,6 +24,29 @@ impl PlaceRepository for PlaceRepositoryImpl {
             .await?;
         Ok(emoji.map(|v| v.into()))
     }
+    async fn get_places(&self, place_ids: Option<Vec<Uuid>>) -> anyhow::Result<Vec<Place>> {
+        let pool = self.pool.clone();
+        let places = match place_ids {
+            Some(place_ids) => {
+                let query_string = format!(
+                    "select * from place where id in (?{})",
+                    ", ?".repeat(place_ids.len() - 1)
+                );
+                let mut query = sqlx::query_as(&query_string);
+
+                for place_id in place_ids.iter() {
+                    query = query.bind(place_id);
+                }
+
+                query.fetch_all(&*pool).await?
+            }
+            None => {
+                let mut query = sqlx::query_as("select * from place");
+                query.fetch_all(&*pool).await?
+            }
+        };
+        Ok(places)
+    }
     async fn add_place(&self, place: &Place) -> anyhow::Result<()> {
         let pool = self.pool.clone();
         sqlx::query(r"insert into place (id, name, address) values (?, ?, ?)")

@@ -21,6 +21,12 @@ where
     pub async fn get_place(&self, id: Uuid) -> anyhow::Result<Option<Place>> {
         self.repositories.place_repository().get_place(id).await
     }
+    pub async fn get_places(&self, place_ids: Option<Vec<Uuid>>) -> anyhow::Result<Vec<Place>> {
+        self.repositories
+            .place_repository()
+            .get_places(place_ids)
+            .await
+    }
     pub async fn add_place(&self, name: String, address: String) -> anyhow::Result<Place> {
         let place = Place {
             id: Uuid::new_v4(),

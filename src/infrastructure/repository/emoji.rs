@@ -1,4 +1,7 @@
-use crate::domain::{model::post::Emoji, repository::emoji::EmojiRepository};
+use crate::{
+    domain::{model::post::Emoji, repository::emoji::EmojiRepository},
+    interface::graphql::query,
+};
 use sqlx::MySqlPool;
 use std::{str::FromStr, sync::Arc};
 use uuid::Uuid;
@@ -27,10 +30,11 @@ impl EmojiRepository for EmojiRepositoryImpl {
         let pool = self.pool.clone();
         let emojis = match emoji_ids {
             Some(emoji_ids) => {
-                let mut query = sqlx::query_as(&format!(
+                let query_string = format!(
                     "select * from emoji where id in (?{})",
                     ", ?".repeat(emoji_ids.len() - 1)
-                ));
+                );
+                let mut query = sqlx::query_as(&query_string);
 
                 for emoji_id in emoji_ids.iter() {
                     query = query.bind(emoji_id);
@@ -39,7 +43,7 @@ impl EmojiRepository for EmojiRepositoryImpl {
                 query.fetch_all(&*pool).await?
             }
             None => {
-                let mut query = sqlx::query_as("select * from emoji");
+                let query = sqlx::query_as("select * from emoji");
                 query.fetch_all(&*pool).await?
             }
         };
@@ -54,7 +58,6 @@ impl EmojiRepository for EmojiRepositoryImpl {
         });
         let query = query.build();
         query.execute(&*pool).await?;
-        // query.fetch(&*pool).await?;
         Ok(())
     }
 }
