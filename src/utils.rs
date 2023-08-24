@@ -1,10 +1,14 @@
 use async_graphql::Schema;
 use rand::{distributions::Alphanumeric, Rng};
 use serde_json::Value;
-use std::{fs::File, io::Write};
+use sqlx::{
+    mysql::{MySqlConnectOptions, MySqlPoolOptions},
+    MySqlPool,
+};
+use std::{fs::File, io::Write, sync::Arc};
 use uuid::Uuid;
 
-use crate::{domain::model::post::Emoji, interface::modules::Modules};
+use crate::{models::Emoji, usecase::emoji::register_emojis};
 
 pub fn gen_rand_alphanumeric(n: usize) -> String {
     rand::thread_rng()
@@ -30,7 +34,7 @@ pub fn gen_graphql_schema_file<Query, Mutation, Subscription>(
     let _ = file.write_all(schema_text.as_bytes());
 }
 
-pub async fn init_emoji(modules: &Modules) -> () {
+pub async fn init_emojis(db: Arc<MySqlPool>) {
     let emojis =
         reqwest::get("https://raw.githubusercontent.com/iamcal/emoji-data/master/emoji.json")
             .await
@@ -42,15 +46,22 @@ pub async fn init_emoji(modules: &Modules) -> () {
     let emojis = emojis
         .as_array()
         .unwrap()
-        .into_iter()
+        .iter()
         .map(|emoji| Emoji {
             id: Uuid::new_v4(),
             name: emoji["short_name"].as_str().unwrap().to_string(),
         })
         .collect::<Vec<_>>();
-    modules
-        .emoji_use_case
-        .register_emojis(&emojis)
-        .await
-        .unwrap();
+    register_emojis(db, &emojis).await.unwrap();
+}
+
+pub async fn connect_db() -> anyhow::Result<MySqlPool> {
+    let mysql_config = MySqlConnectOptions::new()
+        .host("mysql")
+        .port(3306)
+        .username("root")
+        .password("password")
+        .database("blog-db");
+    let pool = MySqlPoolOptions::new().connect_with(mysql_config).await?;
+    Ok(pool)
 }

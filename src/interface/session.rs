@@ -1,9 +1,5 @@
-use self::{
-    cookie::gen_cookie_jwt,
-    oidc::{google_oidc_callback, google_oidc_login},
-};
+use self::oidc::{google_oidc_callback, google_oidc_login};
 
-use super::modules::Modules;
 use axum::{
     extract::{Query, State},
     response::Redirect,
@@ -18,7 +14,7 @@ pub mod cookie;
 pub mod oidc;
 
 pub async fn login_handler(
-    State((_modules, oidc_client)): State<(Arc<Modules>, Arc<CoreClient>)>,
+    State(oidc_client): State<Arc<CoreClient>>,
     jar: CookieJar,
 ) -> Result<(CookieJar, Redirect), StatusCode> {
     let oidc_elms = match google_oidc_login(&oidc_client).await {
@@ -45,7 +41,7 @@ pub struct CallbackParams {
 pub async fn callback_handler(
     Query(query): Query<CallbackParams>,
     jar: CookieJar,
-    State((_modules, oidc_client)): State<(Arc<Modules>, Arc<CoreClient>)>,
+    State(oidc_client): State<Arc<CoreClient>>,
 ) -> Result<Redirect, StatusCode> {
     let state = jar
         .get("state")

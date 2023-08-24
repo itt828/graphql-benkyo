@@ -1,42 +1,34 @@
-use super::model::{Avater, Post};
-use crate::interface::modules::{Modules, ModulesExt};
+use super::model::Post;
+use crate::{
+    models::{Avater as DomainAvater, Emoji, Place},
+    usecase::{
+        emoji::{get_emoji, get_emojis},
+        place::{get_place, get_places},
+        post::{all_posts, get_post},
+        user::{get_avater, get_avaters},
+    },
+};
 use async_graphql::{Object, ID};
+use sqlx::MySqlPool;
 use std::{
     collections::{HashMap, HashSet},
-    str::FromStr,
     sync::Arc,
 };
 use uuid::Uuid;
 
 pub struct Query {
-    pub modules: Arc<Modules>,
+    pub pool: Arc<MySqlPool>,
 }
 
 #[Object]
 impl Query {
     pub async fn post(&self, id: ID) -> anyhow::Result<Option<Post>> {
-        let post = self
-            .modules
-            .post_use_case()
-            .get_post(Uuid::parse_str(&id.0)?)
-            .await?;
+        let post = get_post(self.pool.clone(), Uuid::parse_str(&id.0)?).await?;
         if let Some(post) = post {
-            let avater = self
-                .modules
-                .user_use_case()
-                .get_avater(post.avater_id)
-                .await?;
+            let avater = get_avater(self.pool.clone(), post.avater_id).await?;
 
-            let emoji = self
-                .modules
-                .emoji_use_case()
-                .get_emoji(post.emoji_id)
-                .await?;
-            let place = self
-                .modules
-                .place_use_case()
-                .get_place(post.place_id)
-                .await?;
+            let emoji = get_emoji(self.pool.clone(), post.emoji_id).await?;
+            let place = get_place(self.pool.clone(), post.place_id).await?;
             Ok(Some(Post {
                 id: ID(post.id.to_string()),
                 avater: avater.unwrap().into(),
@@ -53,52 +45,40 @@ impl Query {
         }
     }
     pub async fn posts(&self) -> anyhow::Result<Vec<Post>> {
-        let posts = self.modules.post_use_case.all_posts().await?;
+        let posts = all_posts(self.pool.clone()).await?;
         let avater_ids = posts
             .iter()
             .map(|item| item.avater_id)
             .collect::<HashSet<Uuid>>()
             .into_iter()
             .collect::<Vec<_>>();
-        let avaters = self
-            .modules
-            .user_use_case()
-            .get_avaters(Some(avater_ids))
-            .await?;
+        let avaters = get_avaters(self.pool.clone(), Some(avater_ids)).await?;
         let avaters = avaters
             .iter()
             .map(|item| (item.id, item))
-            .collect::<HashMap<Uuid, &crate::domain::model::user::Avater>>();
+            .collect::<HashMap<Uuid, &DomainAvater>>();
         let emoji_ids = posts
             .iter()
             .map(|item| item.emoji_id)
             .collect::<HashSet<Uuid>>()
             .into_iter()
             .collect::<Vec<_>>();
-        let emojis = 
-        // let emojis: HashMap<Uuid, &crate::domain::model::post::Emoji> = self
-        self.
-            modules
-            .emoji_use_case()
-            .get_emojis(Some(emoji_ids))
-            .await?;
-            let emojis = emojis.iter()
+        let emojis = get_emojis(self.pool.clone(), Some(emoji_ids)).await?;
+        let emojis = emojis
+            .iter()
             .map(|item| (item.id, item))
-            .collect::<HashMap<Uuid, &crate::domain::model::post::Emoji>>();
+            .collect::<HashMap<Uuid, &Emoji>>();
         let place_ids = posts
             .iter()
             .map(|item| item.place_id)
             .collect::<HashSet<Uuid>>()
             .into_iter()
             .collect::<Vec<_>>();
-        let places = self
-            .modules
-            .place_use_case()
-            .get_places(Some(place_ids))
-            .await?;
-            let places = places.iter()
+        let places = get_places(self.pool.clone(), Some(place_ids)).await?;
+        let places = places
+            .iter()
             .map(|item| (item.id, item))
-            .collect::<HashMap<Uuid, &crate::domain::model::post::Place>>();
+            .collect::<HashMap<Uuid, &Place>>();
         Ok(posts
             .iter()
             .map(|item| Post {

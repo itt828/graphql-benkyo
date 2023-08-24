@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
-use interface::{modules::Modules, startup};
-use utils::init_emoji;
+use interface::startup;
+use utils::{connect_db, init_emojis};
 
-pub mod domain;
-pub mod infrastructure;
 pub mod interface;
+pub mod models;
 pub mod usecase;
 pub mod utils;
 
@@ -13,9 +12,9 @@ pub mod utils;
 async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv()?;
 
-    let modules = Arc::new(Modules::new().await?);
+    let pool = Arc::new(connect_db().await?);
     // init_emoji(&modules).await;
-    startup(modules).await?;
+    startup(pool).await?;
 
     Ok(())
 }

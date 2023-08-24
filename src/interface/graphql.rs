@@ -6,28 +6,18 @@ use axum::{
     response::{self, IntoResponse},
     Extension,
 };
-use openidconnect::core::CoreClient;
+use sqlx::MySqlPool;
 
 use self::{mutation::Mutation, query::Query};
-
-use super::modules::Modules;
 
 pub mod model;
 pub mod mutation;
 pub mod query;
 
-pub fn init_schema(
-    modules: Arc<Modules>,
-    oidc_client: Arc<CoreClient>,
-) -> Schema<Query, Mutation, EmptySubscription> {
+pub fn init_schema(pool: Arc<MySqlPool>) -> Schema<Query, Mutation, EmptySubscription> {
     Schema::build(
-        Query {
-            modules: modules.clone(),
-        },
-        Mutation {
-            modules,
-            oidc_client,
-        },
+        Query { pool: pool.clone() },
+        Mutation { pool: pool.clone() },
         EmptySubscription,
     )
     .finish()

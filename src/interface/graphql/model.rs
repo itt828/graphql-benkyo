@@ -1,9 +1,6 @@
 use async_graphql::{SimpleObject, ID};
 
-use crate::domain::model::{
-    post::{Emoji as DomainEmoji, Place as DomainPlace, Post as DomainPost},
-    user::Avater as DomainAvater,
-};
+use crate::models::{Avater as DomainAvater, Emoji as DomainEmoji, Place as DomainPlace};
 
 #[derive(SimpleObject)]
 pub struct Post {
@@ -44,30 +41,30 @@ pub struct Account {
     avaters: Vec<Avater>,
 }
 
-impl Into<Emoji> for DomainEmoji {
-    fn into(self) -> Emoji {
+impl From<DomainEmoji> for Emoji {
+    fn from(value: DomainEmoji) -> Self {
         Emoji {
-            id: ID(self.id.to_string()),
-            name: self.name.to_string(),
+            id: ID(value.id.to_string()),
+            name: value.name.to_string(),
         }
     }
 }
 
-impl Into<Place> for DomainPlace {
-    fn into(self) -> Place {
+impl From<DomainPlace> for Place {
+    fn from(value: DomainPlace) -> Self {
         Place {
-            id: ID(self.id.to_string()),
-            name: self.name,
-            address: self.address,
+            id: ID(value.id.to_string()),
+            name: value.name,
+            address: value.address,
         }
     }
 }
 
-impl Into<Avater> for DomainAvater {
-    fn into(self) -> Avater {
+impl From<DomainAvater> for Avater {
+    fn from(value: DomainAvater) -> Self {
         Avater {
-            id: ID(self.id.to_string()),
-            name: self.name,
+            id: ID(value.id.to_string()),
+            name: value.name,
         }
     }
 }
