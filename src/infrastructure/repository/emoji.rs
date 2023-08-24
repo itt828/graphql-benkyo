@@ -23,6 +23,28 @@ impl EmojiRepository for EmojiRepositoryImpl {
             .await?;
         Ok(emoji.map(|v| v.into()))
     }
+    async fn get_emojis(&self, emoji_ids: Option<Vec<Uuid>>) -> anyhow::Result<Vec<Emoji>> {
+        let pool = self.pool.clone();
+        let emojis = match emoji_ids {
+            Some(emoji_ids) => {
+                let mut query = sqlx::query_as(&format!(
+                    "select * from emoji where id in (?{})",
+                    ", ?".repeat(emoji_ids.len() - 1)
+                ));
+
+                for emoji_id in emoji_ids.iter() {
+                    query = query.bind(emoji_id);
+                }
+
+                query.fetch_all(&*pool).await?
+            }
+            None => {
+                let mut query = sqlx::query_as("select * from emoji");
+                query.fetch_all(&*pool).await?
+            }
+        };
+        Ok(emojis)
+    }
     async fn register_emojis(&self, emojis: &[Emoji]) -> anyhow::Result<()> {
         let pool = self.pool.clone();
         let mut query = sqlx::QueryBuilder::new(r"insert into emoji (id, name)");
