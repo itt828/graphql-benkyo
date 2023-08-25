@@ -6,7 +6,7 @@ use openidconnect::{
     AccessTokenHash, AuthorizationCode, ClientId, ClientSecret, CsrfToken, IssuerUrl, Nonce,
     OAuth2TokenResponse, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, Scope, TokenResponse,
 };
-use std::{borrow::Cow, env, fmt::format};
+use std::{borrow::Cow, env};
 
 pub async fn init_google_oidc_client() -> anyhow::Result<CoreClient> {
     let client_id = env::var("CLIENT_ID")?;
